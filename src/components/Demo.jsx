@@ -10,7 +10,17 @@ const Demo = () => {
     summary: '',
   })
 
+  const [allarticles, setAllArticles] = useState([]);
+
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
+
+  useEffect(() => {
+    const articlesFromLocallStorage = JSON.parse(localStorage.getItem('articles'));
+
+    if (articlesFromLocallStorage) {
+      setAllArticles(articlesFromLocallStorage);
+    }
+  },[])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,10 +29,12 @@ const Demo = () => {
 
     if(data?.summary) {
       const newArticle = ({ ...article, summary: data.summary });
+      const updatedAllArticles = [newArticle, ...allarticles]
 
       setArticle(newArticle);
+      setAllArticles(updatedAllArticles);
 
-      console.log(newArticle);
+      localStorage.setItem('articles', JSON.stringify(updatedAllArticles));
     }
   }
 
@@ -53,6 +65,27 @@ const Demo = () => {
         </form>
 
         {/* browse url history */}
+        <div className='flex flex-col gap-1 max-h-60 overflow-y-auto'>
+          {allArticles.reverse().map((item, index) => (
+            <div
+              key={`link-${index}`}
+              onClick={() => setArticle(item)}
+              className='link_card'
+            >
+              <div className='copy_btn' onClick={() => handleCopy(item.url)}>
+                <img
+                  src={copied === item.url ? tick : copy}
+                  alt={copied === item.url ? "tick_icon" : "copy_icon"}
+                  className='w-[40%] h-[40%] object-contain'
+                />
+              </div>
+              <p className='flex-1 font-satoshi text-blue-700 font-medium text-sm truncate'>
+                {item.url}
+              </p>
+            </div>
+          ))}
+        </div>
+
       </div>
       {/* Display results */}
      
